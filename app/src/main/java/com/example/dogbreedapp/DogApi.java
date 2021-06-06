@@ -5,5 +5,5 @@ import retrofit2.http.GET;
 
 public interface DogApi {
     @GET("api/breeds/list/all")
-    Call<Post> getPost();
+    Call<Root> getRoot();
 }
