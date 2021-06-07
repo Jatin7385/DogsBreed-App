@@ -1,11 +1,14 @@
 package com.example.dogbreedapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.widget.TextView;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -17,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     TextView title;
     RecyclerView recyclerView;
     RecyclerAdapter recyclerAdapter;
-    String names[],url[];
+    String names[],url;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,36 +34,9 @@ public class MainActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        DogApi dogApi = retrofit.create(DogApi.class);
-
-        ImageApi imageApi = retrofit.create(ImageApi.class);
-        Call<Images> call;
-        for(int i=0;i<names.length;i++) {
-            //System.out.println(names[i]);
-            call = imageApi.getImage(names[i]);
-            int finalI = i;
-            //System.out.println(finalI);
-
-            //Nothing after this line gets printed
-            call.enqueue(new Callback<Images>() {
-                @Override
-                public void onResponse(Call<Images> call, Response<Images> response) {
-                    //System.out.println("Hello");
-                    if (!response.isSuccessful()) {
-                        System.out.println("Code: " + response.code());
-                        return;
-                    }
-                    Images images = response.body();
-                    url[finalI] = images.getUrl();
-                    System.out.println("https://dog.ceo/api/breed/"+names[finalI]+"/images/random");
-                }
-
-                @Override
-                public void onFailure(Call<Images> call, Throwable t) {
-                    System.out.println("Error : " + t.toString());
-                }
-            });
-        }
+        //DogApi dogApi = retrofit.create(DogApi.class);
+        recyclerAdapter = new RecyclerAdapter(MainActivity.this,names);
+        recyclerView.setAdapter(recyclerAdapter);
 
         /*Call<Root> call = dogApi.getRoot();
         call.enqueue(new Callback<Root>() {
@@ -81,8 +57,36 @@ public class MainActivity extends AppCompatActivity {
             }
         });*/
 
-        recyclerAdapter = new RecyclerAdapter(MainActivity.this,names,url);
-        recyclerView.setAdapter(recyclerAdapter);
 
     }
+/*    String[] CallFunction(String[] names, String[] url, Call<Images> call,ImageApi imageApi,int i)
+    {
+        System.out.println("Hello");
+        System.out.println("https://dog.ceo/api/breed/" + names[i] + "/images/random");
+        System.out.println(i);
+        if(i!=names.length-1) {
+            call = imageApi.getImage(names[i]);
+            int finalI = i;
+            call.enqueue(new Callback<Images>() {
+                @Override
+                public void onResponse(Call<Images> call, Response<Images> response) {
+                    if (!response.isSuccessful()) {
+                        System.out.println("Code: " + response.code());
+                        return;
+                    }
+                    Images images = response.body();
+                    url[finalI] = images.getUrl();
+                    System.out.println("https://dog.ceo/api/breed/" + names[finalI] + "/images/random");
+                }
+
+                @Override
+                public void onFailure(Call<Images> call, Throwable t) {
+                    System.out.println("Error : " + t.toString());
+                }
+            });
+            i++;
+            CallFunction(names, url, call, imageApi, i);
+        }
+        return url;
+    }*/
 }

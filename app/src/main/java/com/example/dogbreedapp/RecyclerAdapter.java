@@ -23,13 +23,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
     String names[];
     Context context;
-    String url[];
-    ImageView imageView;
+    String url;
 
-    public RecyclerAdapter(MainActivity context, String[] names,String[] url) {
+    public RecyclerAdapter(MainActivity context, String[] names) {
+        //System.out.println(url);
+        //System.out.println(names);
+        this.url = "";
         this.names = names;
         this.context = context;
-        this.url = url;
     }
 
     @NonNull
@@ -43,8 +44,34 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerAdapter.ViewHolder holder, int position) {
-        Picasso.with(context).load(url[position]).into(imageView);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://dog.ceo/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ImageApi imageApi = retrofit.create(ImageApi.class);
+        Call<Images> call = imageApi.getImage(names[position]);
+        call.enqueue(new Callback<Images>() {
+            @Override
+            public void onResponse(Call<Images> call, Response<Images> response) {
+                if (!response.isSuccessful()) {
+                    System.out.println("Code: " + response.code());
+                    return;
+                }
+                Images images = response.body();
+                url = images.getUrl();
+                Picasso.with(context).load(url).into(holder.imageView);
+                System.out.println("Inside "+url);
+            }
+
+            @Override
+            public void onFailure(Call<Images> call, Throwable t) {
+                System.out.println("Error : " + t.toString());
+            }
+        });
         holder.breed.setText(names[position]);
+        System.out.println(names[position]);
+        System.out.println(url);
     }
 
     @Override
@@ -54,6 +81,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     public class ViewHolder extends RecyclerView.ViewHolder{
         TextView breed;
+        ImageView imageView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             breed = itemView.findViewById(R.id.breed);
